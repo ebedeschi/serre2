@@ -22,11 +22,12 @@ uint16_t getVbat(ADC_HandleTypeDef hadc)
 	HAL_Delay(10); //delay
 
 	HAL_ADC_Start(&hadc);
+	HAL_Delay(500); //delay
 
-	if (HAL_ADC_PollForConversion(&hadc, 1000000) == HAL_OK)
-	{
+//	if (HAL_ADC_PollForConversion(&hadc, 1000) == HAL_OK)
+//	{
 		g_ADCValue = HAL_ADC_GetValue(&hadc);
-	}
+//	}
 
 	v_adc = con * g_ADCValue + offset;
 	v_bat = v_adc * 4;

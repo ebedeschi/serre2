@@ -177,86 +177,12 @@ int main(void)
   /* Configure the hardware*/
   HW_Init( );
 
-  HAL_GPIO_WritePin(RADIO_NRESET_GPIO_Port, RADIO_NRESET_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(RADIO_NRESET_GPIO_Port, RADIO_NRESET_Pin, GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_SET);
 
 //    lora_Init( &LoRaMainCallbacks, &LoRaParamInit);
 
 //    PRINTF("VERSION: %X\n", VERSION);
-
-//  HOneWire _wire;
-//  HOneWire* wire;
-//  //handle bus OneWire
-//  _wire = owCreateHandle(OneWireBus_GPIO_Port, OneWireBus_Pin);
-//  wire = &_wire;
-//  owBegin(wire);
-//
-//  //Test termometro
-//  dsSearchResult sr = dsSearchThermometers(wire);
-//  HDsThermometer _ds = dsCreateHandle(wire, sr.devices[0]);
-//  dsDeleteSearchResult(&sr);
-//  HDsThermometer* ds = &_ds;
-//  dsBegin(ds);
-//  float temp = 0;
-//  dsGetTemperature(ds, &temp);
-//  dsRequestTemperature(ds);
-//  dsGetTemperature(ds, &temp);
-//
-//	BH1750 luxMeter;
-//	//crea handle luxMeter. Lo collega all'indirizzo basso
-//	luxMeter = BH1750_CreateHandle(&hi2c1, BH1750_LOW_ADDRESS);
-//	//inizializza la periferica in CONTINUOUS_HIGH_RES_MODE_1
-//	BH1750_Begin(luxMeter, CONTINUOUS_HIGH_RES_MODE_1);
-//	HAL_Delay(10);
-//
-//	uint16_t vbat = 0;
-//	vbat = getVbat(hadc3);
-//
-//	uint16_t sT, sH;
-//	float   temperatureC, humidityH;           //variable for temperature[°C] as float
-//	uint8_t  error = 0;              //variable for error code. For codes see system.h
-//	char ctemp[20];
-//	error |= SHT2x_MeasureHM(TEMP, &sT);
-//	temperatureC = SHT2x_CalcTemperatureC(sT);
-//	int d1 = temperatureC;
-//	float f2 = ((float)temperatureC) - d1;
-//	int d2 = trunc(f2 * 100);
-//	sprintf(ctemp,"%d.%d", d1, d2);
-//	char chum[20];
-//	error |= SHT2x_MeasureHM(HUMIDITY, &sH);
-//	humidityH = SHT2x_CalcRH(sH);
-//	d1 = humidityH;
-//	f2 = ((float)humidityH) - d1;
-//	d2 = trunc(f2 * 100);
-//	sprintf(chum,"%d.%d", d1, d2);
-//
-//	int lux = BH1750_ReadLightLevel(luxMeter);
-//
-//	char b[100]={'\0'};
-//	uint8_t blen = 0;
-//	RadioEvents_t re;
-//	re.TxDone = fai;
-//	re.RxDone = fai;
-//	re.RxError = fai;
-//	re.TxTimeout = fai;
-//	re.RxTimeout = fai;
-//	Radio.Init( &re );
-//	Radio.SetChannel( 868000000 );
-//
-//	b[0]=100;
-//	b[1]=1;
-//	b[2]=100;
-//	b[3]=0;
-//	b[4]='\0';
-//	sprintf(&b[4], "%s:%s:%d:%d", ctemp, chum, lux, vbat);
-//	blen = strlen(&b[4]) + 4;
-//
-//	uint32_t crc = crc32(0, &b[4], blen - 4);
-//	memcpy(&b[blen], &crc, 4);
-//	blen += 4;
-//
-//	Radio.SetTxConfig( MODEM_LORA, 5, 0, 0, 7, 1, 8, false, true, 0, 0, false, 3000 );
-//	Radio.Send( b, blen );
 
 //	TimerInit( &wakeup, OnWakeup );
 //	TimerSetValue( &wakeup, 2500 );
@@ -271,12 +197,87 @@ int main(void)
 	  /* run the LoRa class A state machine*/
 //	  lora_fsm( );
 
+		HOneWire _wire;
+		HOneWire* wire;
+		//handle bus OneWire
+		_wire = owCreateHandle(OneWireBus_GPIO_Port, OneWireBus_Pin);
+		wire = &_wire;
+		owBegin(wire);
+
+		//Test termometro
+		dsSearchResult sr = dsSearchThermometers(wire);
+		HDsThermometer _ds = dsCreateHandle(wire, sr.devices[0]);
+		dsDeleteSearchResult(&sr);
+		HDsThermometer* ds = &_ds;
+		dsBegin(ds);
+		float temp = 0;
+		dsGetTemperature(ds, &temp);
+		dsRequestTemperature(ds);
+		dsGetTemperature(ds, &temp);
+
+		BH1750 luxMeter;
+		//crea handle luxMeter. Lo collega all'indirizzo basso
+		luxMeter = BH1750_CreateHandle(&hi2c1, BH1750_LOW_ADDRESS);
+		//inizializza la periferica in CONTINUOUS_HIGH_RES_MODE_1
+		BH1750_Begin(luxMeter, CONTINUOUS_HIGH_RES_MODE_1);
+		HAL_Delay(10);
+
+		uint16_t vbat = 0;
+		vbat = getVbat(hadc3);
+
+		uint16_t sT, sH;
+		float   temperatureC, humidityH;           //variable for temperature[°C] as float
+		uint8_t  error = 0;              //variable for error code. For codes see system.h
+		char ctemp[20];
+		error |= SHT2x_MeasureHM(TEMP, &sT);
+		temperatureC = SHT2x_CalcTemperatureC(sT);
+		int d1 = temperatureC;
+		float f2 = ((float)temperatureC) - d1;
+		int d2 = trunc(f2 * 100);
+		sprintf(ctemp,"%d.%d", d1, d2);
+		char chum[20];
+		error |= SHT2x_MeasureHM(HUMIDITY, &sH);
+		humidityH = SHT2x_CalcRH(sH);
+		d1 = humidityH;
+		f2 = ((float)humidityH) - d1;
+		d2 = trunc(f2 * 100);
+		sprintf(chum,"%d.%d", d1, d2);
+
+		int lux = BH1750_ReadLightLevel(luxMeter);
+
+		char b[100]={'\0'};
+		uint8_t blen = 0;
+		RadioEvents_t re;
+		re.TxDone = fai;
+		re.RxDone = fai;
+		re.RxError = fai;
+		re.TxTimeout = fai;
+		re.RxTimeout = fai;
+		Radio.Init( &re );
+		Radio.SetChannel( 868000000 );
+
+		b[0]=100;
+		b[1]=1;
+		b[2]=100;
+		b[3]=0;
+		b[4]='\0';
+		sprintf(&b[4], "%s:%s:%d:%d", ctemp, chum, lux, vbat);
+		blen = strlen(&b[4]) + 4;
+
+		uint32_t crc = crc32(0, &b[4], blen - 4);
+		memcpy(&b[blen], &crc, 4);
+		blen += 4;
+
+		Radio.SetTxConfig( MODEM_LORA, 5, 0, 0, 7, 1, 8, false, true, 0, 0, false, 3000 );
+		Radio.Send( b, blen );
+		HAL_Delay(1000);
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
 
 	TimerInit( &wakeup, OnWakeup );
-	TimerSetValue( &wakeup, 2000 );
+	TimerSetValue( &wakeup, 5000 );
 	TimerStart( &wakeup );
 
 	DISABLE_IRQ( );
@@ -288,7 +289,7 @@ int main(void)
 
 
 //	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-	  HAL_Delay(2000);
+//	  HAL_Delay(5000);
 	  PRINTF("Prova \n");
   }
   /* USER CODE END 3 */
