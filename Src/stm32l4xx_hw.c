@@ -102,6 +102,8 @@ void HW_Init( void )
 
 //    HW_AdcInit( );
 
+    HW_RF95_powerON();
+
     Radio.IoInit( );
     
     HW_SPI_Init( );
@@ -127,6 +129,8 @@ void HW_DeInit( void )
   
   Radio.IoDeInit( );
   
+  HW_RF95_powerOFF();
+
   vcom_DeInit( );
  
   McuInitialized = false;
@@ -151,9 +155,6 @@ void HW_DeInit( void )
   * @param  None
   * @retval None
   */
-
-
-
 //void SystemClock_Config( void )
 //{
 //  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};

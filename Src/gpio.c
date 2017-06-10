@@ -72,10 +72,7 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, OneWireBus_Pin|RADIO_NSS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(RADIO_NRESET_GPIO_Port, RADIO_NRESET_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, RADIO_NRESET_Pin|RFPOWER_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : PCPin PCPin PCPin PCPin 
                            PCPin PCPin */

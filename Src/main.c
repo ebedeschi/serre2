@@ -55,6 +55,10 @@
 #include "lora.h"
 #include "hw.h"
 
+#define NODE_ID 1
+#define GATEWAY 100
+
+
 /*!
  * Defines the application data transmission duty cycle. 5s, value in [ms].
  */
@@ -171,11 +175,16 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(RADIO_NRESET_GPIO_Port, RADIO_NRESET_Pin, GPIO_PIN_SET);
-//  HAL_GPIO_WritePin(RADIO_NSS_GPIO_Port, RADIO_NSS_Pin, GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(RADIO_NRESET_GPIO_Port, RADIO_NRESET_Pin, GPIO_PIN_SET);
 
   /* Configure the hardware*/
   HW_Init( );
+
+//  hrtc = RtcHandle;
+
+//  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+//  HAL_Delay(5000);
+//  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
 
 //  HAL_GPIO_WritePin(RADIO_NRESET_GPIO_Port, RADIO_NRESET_Pin, GPIO_PIN_RESET);
 //  HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_SET);
@@ -210,10 +219,10 @@ int main(void)
 		dsDeleteSearchResult(&sr);
 		HDsThermometer* ds = &_ds;
 		dsBegin(ds);
-		float temp = 0;
-		dsGetTemperature(ds, &temp);
+		float dtemp = 0;
+		dsGetTemperature(ds, &dtemp);
 		dsRequestTemperature(ds);
-		dsGetTemperature(ds, &temp);
+		dsGetTemperature(ds, &dtemp);
 
 		BH1750 luxMeter;
 		//crea handle luxMeter. Lo collega all'indirizzo basso
@@ -228,22 +237,12 @@ int main(void)
 		uint16_t sT, sH;
 		float   temperatureC, humidityH;           //variable for temperature[°C] as float
 		uint8_t  error = 0;              //variable for error code. For codes see system.h
-		char ctemp[20];
 		error |= SHT2x_MeasureHM(TEMP, &sT);
 		temperatureC = SHT2x_CalcTemperatureC(sT);
-		int d1 = temperatureC;
-		float f2 = ((float)temperatureC) - d1;
-		int d2 = trunc(f2 * 100);
-		sprintf(ctemp,"%d.%d", d1, d2);
-		char chum[20];
 		error |= SHT2x_MeasureHM(HUMIDITY, &sH);
 		humidityH = SHT2x_CalcRH(sH);
-		d1 = humidityH;
-		f2 = ((float)humidityH) - d1;
-		d2 = trunc(f2 * 100);
-		sprintf(chum,"%d.%d", d1, d2);
 
-		int lux = BH1750_ReadLightLevel(luxMeter);
+		uint16_t lux = BH1750_ReadLightLevel(luxMeter);
 
 		char b[100]={'\0'};
 		uint8_t blen = 0;
@@ -256,21 +255,28 @@ int main(void)
 		Radio.Init( &re );
 		Radio.SetChannel( 868000000 );
 
-		b[0]=100;
-		b[1]=1;
-		b[2]=100;
+		b[0]=GATEWAY;
+		b[1]=NODE_ID;
+		b[2]=GATEWAY;
 		b[3]=0;
 		b[4]='\0';
-		sprintf(&b[4], "%s:%s:%d:%d", ctemp, chum, lux, vbat);
-		blen = strlen(&b[4]) + 4;
+
+		memcpy(&b[4], &temperatureC, 4);
+		memcpy(&b[8], &humidityH, 4);
+		memcpy(&b[12], &dtemp, 4);
+		memcpy(&b[16], &lux, 2);
+		memcpy(&b[18], &vbat, 2);
+		blen = 16 + 4;
 
 		uint32_t crc = crc32(0, &b[4], blen - 4);
 		memcpy(&b[blen], &crc, 4);
 		blen += 4;
 
-		Radio.SetTxConfig( MODEM_LORA, 5, 0, 0, 7, 1, 8, false, true, 0, 0, false, 3000 );
+		Radio.SetTxConfig( MODEM_LORA, 14, 0, 0, 7, 1, 8, false, true, 0, 0, false, 2000 );
 		Radio.Send( b, blen );
-		HAL_Delay(1000);
+		HAL_Delay(5000);
+
+	  PRINTF("Prima \n");
 
   /* USER CODE END WHILE */
 
@@ -290,7 +296,7 @@ int main(void)
 
 //	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 //	  HAL_Delay(5000);
-	  PRINTF("Prova \n");
+	  PRINTF("Dopo \n");
   }
   /* USER CODE END 3 */
 
