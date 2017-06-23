@@ -4,6 +4,7 @@
 #include "DsThermometer_C.h"
 #include "stm32l4xx_hal.h"
 
+
 ////////////////////////////////////////
 ////    DECLARATIONS
 
@@ -72,19 +73,19 @@ float dsCalculateTemperature(HDsThermometer* handle, dsScratchPad scratchPad);
 dsSearchResult dsSearchThermometers(HOneWire* wire)
 {
   dsSearchResult result;
-  
+
   //inizializza
   result.numDevices = 0;
   result.devices = NULL;
   
   //resetta la ricerca sul bus
   owResetSearch(wire);
-  
+
   //finchÃ¨ trova dispositivi
   while (owSearch(wire, NORMAL_SEARCH))
   {
     //trovato un dispositivo OneWire
-    
+
     //controlla se l'indirizzo è valido
     if (dsCheckValidAddress(wire->SelectedDevice))
     {

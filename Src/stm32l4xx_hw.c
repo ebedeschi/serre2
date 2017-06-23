@@ -102,13 +102,13 @@ void HW_Init( void )
 
 //    HW_AdcInit( );
 
+    HW_RTC_Init( );
+
     HW_RF95_powerON();
 
     Radio.IoInit( );
     
     HW_SPI_Init( );
-
-    HW_RTC_Init( );
     
     vcom_Init( );
     

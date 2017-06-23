@@ -55,7 +55,7 @@
 #include "lora.h"
 #include "hw.h"
 
-#define NODE_ID 1
+#define NODE_ID 4
 #define GATEWAY 100
 
 
@@ -133,6 +133,7 @@ void fai()
 {}
 
 TimerEvent_t wakeup;
+extern TimerEvent_t TxTimeoutTimer;
 
 static void OnWakeup( void )
 {
@@ -154,6 +155,8 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 
+	uint32_t del = 0;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -174,8 +177,23 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_RESET);
 //  HAL_GPIO_WritePin(RADIO_NRESET_GPIO_Port, RADIO_NRESET_Pin, GPIO_PIN_SET);
+
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+  uint64_t a=0,b=0;
+  while(a++<10000000)
+	  while(b++<1000000);
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+
+  //inizializza il cpu clock counter
+  if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
+  {
+      CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+      DWT->CYCCNT = 0;
+      DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+  }
+
 
   /* Configure the hardware*/
   HW_Init( );
@@ -272,18 +290,42 @@ int main(void)
 		memcpy(&b[blen], &crc, 4);
 		blen += 4;
 
-		Radio.SetTxConfig( MODEM_LORA, 14, 0, 0, 7, 1, 8, false, true, 0, 0, false, 2000 );
+		HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+
+		HAL_Delay(2000);
+		Radio.SetTxConfig( MODEM_LORA, 20, 0, 0, 7, 1, 8, false, true, 0, 0, false, 2000 );
 		Radio.Send( b, blen );
-		HAL_Delay(5000);
+		HAL_Delay(2000);
 
 	  PRINTF("Prima \n");
+
+	  // random delay
+
+	  del =  ( (uint32_t) ((temperatureC + humidityH + del) * 100 ) ) % 20;
+	  if (del<0 || del>20)
+		  del = 0;
 
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
 
+//	  HAL_GPIO_WritePin(RFPOWER_GPIO_Port, RFPOWER_Pin, GPIO_PIN_SET);
+
 	TimerInit( &wakeup, OnWakeup );
-	TimerSetValue( &wakeup, 5000 );
+	TimerSetValue( &wakeup, 5000 + (del * 1000) );
+	TimerStart( &wakeup );
+
+	DISABLE_IRQ( );
+//    if ( lora_getDeviceState( ) == DEVICE_STATE_SLEEP )
+//    {
+	  LowPower_Handler( );
+//    }
+	ENABLE_IRQ();
+
+	HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+
+	TimerInit( &wakeup, OnWakeup );
+	TimerSetValue( &wakeup, 180000 );
 	TimerStart( &wakeup );
 
 	DISABLE_IRQ( );
@@ -297,6 +339,8 @@ int main(void)
 //	  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 //	  HAL_Delay(5000);
 	  PRINTF("Dopo \n");
+
+//	  NVIC_SystemReset();
   }
   /* USER CODE END 3 */
 

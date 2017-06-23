@@ -1,5 +1,6 @@
 
 #include "OneWire_C.h"
+#include "stm32l4xx_hal.h"
 
 //////////////////////////////////////////////////////////////////
 ///////   OneWireInternal
@@ -13,22 +14,22 @@
 
 #define ENABLE_INTERRUPTS()     //__disable_irq()
 #define DISABLE_INTERRUPTS()    //__enable_irq()
-#define DELAY_MICROSECONDS(x)   DelayM(x)
+#define DELAY_MICROSECONDS(x)   delayUS_DWT(x)
 
 /**
  * @brief  Delays for amount of micro seconds
  * @param  micros: Number of microseconds for delay
  * @retval None
  */
-void DelayM(uint32_t micros) {
-	uint32_t start = DWT->CYCCNT;
-
-	/* Go to number of cycles for system */
-	micros *= (HAL_RCC_GetHCLKFreq() / 1000000);
-
-	/* Delay till end */
-	while ((DWT->CYCCNT - start) < micros);
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+void delayUS_DWT(uint32_t us) {
+	volatile uint32_t cycles = (SystemCoreClock/1000000L)*us;
+	volatile uint32_t start = DWT->CYCCNT;
+	do  {
+	} while(DWT->CYCCNT - start < cycles);
 }
+#pragma GCC pop_options
 
 //Imposta il pin della porta in input mode
 void _port_mode_input(owPort* port)
